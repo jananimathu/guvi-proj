@@ -12,7 +12,15 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { API } from "../axios";
-import { Alert, AlertColor, Snackbar } from "@mui/material";
+import {
+  Alert,
+  AlertColor,
+  CircularProgress,
+  IconButton,
+  InputAdornment,
+  Snackbar,
+} from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 const Auth = () => {
   const [registerMode, setRegisterMode] = useState(false);
@@ -21,6 +29,8 @@ const Auth = () => {
     message: "",
     severity: "success",
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const { open, message, severity } = AlertMode;
   const {
@@ -40,6 +50,10 @@ const Auth = () => {
 
   const navigate = useNavigate();
 
+  const handleClickShowPassword = () => {
+    setShowPassword((prev) => !prev);
+  };
+
   const handleSignInToggle = () => {
     setRegisterMode((prev) => !prev);
     reset();
@@ -58,6 +72,7 @@ const Auth = () => {
   };
 
   const onSubmit = (e: any) => {
+    setLoading(true);
     if (registerMode && e.password != e.confirmPassword) {
       setError("confirmPassword", {
         type: "manual",
@@ -73,6 +88,7 @@ const Auth = () => {
             message: "Registered Successfully",
             severity: "success",
           });
+          setLoading(false);
           handleToken(res);
           setTimeout(() => {
             navigate("/profile");
@@ -88,6 +104,7 @@ const Auth = () => {
     } else {
       API.post("user/signin", e)
         .then((res) => {
+          setLoading(false);
           handleToken(res);
           navigate("/profile");
         })
@@ -201,6 +218,20 @@ const Auth = () => {
                   <TextField
                     {...field}
                     label="Password"
+                    type={showPassword ? "text" : "password"}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle password visibility"
+                            onClick={handleClickShowPassword}
+                            edge="end"
+                          >
+                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
                     fullWidth
                     error={Boolean(errors.password)}
                     helperText={errors.password?.message}
@@ -223,6 +254,24 @@ const Auth = () => {
                     <TextField
                       {...field}
                       label="Confirm Password"
+                      type={showPassword ? "text" : "password"}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              aria-label="toggle password visibility"
+                              onClick={handleClickShowPassword}
+                              edge="end"
+                            >
+                              {showPassword ? (
+                                <VisibilityOff />
+                              ) : (
+                                <Visibility />
+                              )}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
                       fullWidth
                       error={Boolean(errors.confirmPassword)}
                       helperText={errors.confirmPassword?.message}
@@ -239,7 +288,13 @@ const Auth = () => {
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
           >
-            {registerMode ? "Sign Up" : "Sign In"}
+            {loading ? (
+              <CircularProgress sx={{ color: "white" }} size={20} />
+            ) : registerMode ? (
+              "Sign Up"
+            ) : (
+              "Sign In"
+            )}
           </Button>
           <Grid container justifyContent="flex-end" sx={{ cursor: "pointer" }}>
             <Grid item>

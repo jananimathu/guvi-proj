@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Alert,
   AlertColor,
+  CircularProgress,
   FormControlLabel,
   FormLabel,
   RadioGroup,
@@ -24,6 +25,7 @@ const Profile = () => {
     message: "",
     severity: "success",
   });
+  const [loading, setLoading] = useState(false);
 
   const { open, message, severity } = AlertMode;
 
@@ -81,8 +83,10 @@ const Profile = () => {
   };
 
   const onSubmit = (e: any) => {
+    setLoading(true);
     API.post("user/updateProfile", e)
       .then(() => {
+        setLoading(false);
         setAlertMode({
           open: true,
           message: "Profile updated successfully",
@@ -264,7 +268,11 @@ const Profile = () => {
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
           >
-            Update
+            {loading ? (
+              <CircularProgress sx={{ color: "white" }} size={20} />
+            ) : (
+              "Update"
+            )}
           </Button>
           <Button
             type="submit"
